@@ -1,7 +1,7 @@
 import pyodbc
 
-# Função para conectar ao banco
-def conn_banco():
+# Função para conectar ao banco de dados
+def conn_bd():
     dt_cnt = (
         r'DRIVER={SQL Server};'
         r'SERVER=DESKTOP-T2JV7P5;'
@@ -12,58 +12,64 @@ def conn_banco():
     print("Conexão bem sucedida")
     return cnt
 
-# Função para executar SQL e retornar resultados em uma lista de tuplas
+# Função para executar SQL e retornar res em uma lista de tuplas
 def exec_sql(conn, cmd):
     curs = conn.cursor()
     curs.execute(cmd)
     res = [row for row in curs.fetchall()]
     return res
 
-# Função para imprimir resultados organizados
-def imprime_res(res):
+# Função para organizar res em uma lista de dicionários
+def org_lista_dic(res):
+    cols = [column[0] for column in curs.description]
+    lis_dic = [dict(zip(cols, row)) for row in res]
+    return lis_dic
+
+# Função para organizar res em uma lista de tuplas
+def org_lista_tup(res):
+    return res
+
+# Função para organizar res em um dicionário
+def org_dic(res):
+    cols = [column[0] for column in curs.description]
+    dic = {row[0]: dict(zip(cols[1:], row[1:])) for row in res}
+    return dic
+
+# Função para imprimir res de forma organizada
+def imp_res(res):
     for row in res:
         print(row)
 
-# Opções SQL
-def exibe_menu():
+# Exibe opções de estruturas de dados
+def exi_menu():
     print("Opções:")
-    print("1 - Selecionar todos os registros de uma tabela")
-    print("2 - Inserir um novo registro em uma tabela")
-    print("3 - Atualizar registros em uma tabela")
-    print("4 - Deletar registros de uma tabela")
-    print("5 - Criar uma nova tabela")
-    print("6 - Alterar a estrutura de uma tabela")
-    print("7 - Realizar um JOIN em duas tabelas")
+    print("1 - Organizar em lista de dicionários")
+    print("2 - Organizar em lista de tuplas")
+    print("3 - Organizar em dicionário")
 
 def main():
-    conn = conn_banco()
+    conn = conn_bd()
 
-    # Exibir menu e obter opção do usuário
-    exibe_menu()
+    # Exibe menu e obtém opção do usuário
+    exi_menu()
     op = input("Digite o número da opção desejada: ")
 
+    cmd = "seu_comando_sql"  # Substitua pelo seu comando SQL real
+
+    res = exec_sql(conn, cmd)
+
     if op == "1":
-        cmd = "SELECT * FROM sua_tabela"
+        dad_org = org_lista_dic(res)
     elif op == "2":
-        cmd = "INSERT INTO sua_tabela (col1, col2) VALUES (val1, val2)"
+        dad_org = org_lista_tup(res)
     elif op == "3":
-        cmd = "UPDATE sua_tabela SET col = novo_valor WHERE cond"
-    elif op == "4":
-        cmd = "DELETE FROM sua_tabela WHERE condicao"
-    elif op == "5":
-        cmd = "CREATE TABLE nova_tabela (col1 tipo1, col2 tipo2, ...)"
-    elif op == "6":
-        cmd = "ALTER TABLE sua_tabela ADD col tipo"
-    elif op == "7":
-        cmd = "SELECT * FROM tabela1 JOIN tabela2 ON tabela1.chave = tabela2.chave"
+        dad_org = org_dic(res)
     else:
         print("Opção inválida.")
         return
 
-    res = exec_sql(conn, cmd)
-    imprime_res(res)
+    imp_res(dad_org)
     conn.commit()
 
 if __name__ == "__main__":
     main()
-
